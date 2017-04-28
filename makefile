@@ -2,7 +2,7 @@
 
 NAME=danbo
 
-CPPSOURCES=danbo
+CPPSOURCES=danbo danbotest
 ASOURCES=
 
 LIBS=feta

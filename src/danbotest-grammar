@@ -1,0 +1,4 @@
+DEFCHAR(la, 'a')
+DEFCHAR(lb, 'b')
+
+DEFSWITCH(letter, la, lb)
