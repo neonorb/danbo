@@ -28,6 +28,7 @@ static void danbo() {
 	{
 		ParseResult<ST(letter)> status = PARSE(letter, "ab");
 		assert(status.status == ParseStatus::FAIL, "parser passed when it was suppose to fail");
+		assert(status.failedAt == 1, "incorrect failedAt");
 	}
 	
 	// choose the right character
@@ -110,7 +111,7 @@ static void danbo() {
 	if(origionalAllocatedCount != laterAllocatedCount) {
 		//dumpAllocated();
 	}
-	assert(origionalAllocatedCount == laterAllocatedCount, "memory leak");
+	assert(origionalAllocatedCount == laterAllocatedCount, "there is a memory leak");
 #endif
 }
 
@@ -118,6 +119,7 @@ void test() {
 	log(" - danbo");
 	danbo();
 }
+
 }
 
 #endif
