@@ -38,12 +38,16 @@ ParseResult<T> parse(Result<T> (*parseFunction)(feta::String, feta::UInteger),
 	Result<T> result = parseFunction(code, 0);
 	ParseResult<T> status;
 	if (result.tree == NULL) {
+		// parsing failed
 		status.status = ParseStatus::FAIL;
 		status.failedAt = result.position;
 	} else if (result.position < feta::stringLength(code)) {
+		// we still have unparsed bytes (even though parsing passed), fail the whole parse
+		delete result.tree;
 		status.status = ParseStatus::FAIL;
 		status.failedAt = result.position;
 	} else {
+		// parsing passed
 		status.status = ParseStatus::OK;
 		status.tree = result.tree;
 	}
@@ -87,11 +91,13 @@ struct SymbolTree {
 
 // match each symbol exactly
 // storage
-#define _DEFLITERALT_EACH1(name, nested) ST(nested)* name;
+#define _DEFLITERALT_EACH1(name, nested) ST(nested)* name = NULL;
 #define _DEFLITERALT_EACH(data, x) _DEFLITERALT_EACH1 x
 // destructor
 #define _DEFLITERALT_D_EACH1(name, nested) \
-	delete (danbo::SymbolTree*) name;
+	if (name != NULL) { \
+		delete (danbo::SymbolTree*) name; \
+	}
 #define _DEFLITERALT_D_EACH(data, x) _DEFLITERALT_D_EACH1 x
 // parser
 #define _DEFLITERALP_EACH1(name, nested) { \

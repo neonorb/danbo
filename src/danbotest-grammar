@@ -1,4 +1,11 @@
 DEFCHAR(la, 'a')
 DEFCHAR(lb, 'b')
-
 DEFSWITCH(letter, la, lb)
+
+DEFCHAR(openpar, '(')
+DEFCHAR(closepar, ')')
+DEFLITERAL(expression, N(nopenpar, openpar), N(nletter, letter), N(nclosepar, closepar))
+
+DEFVARIABLE(variableexpressions, expression)
+
+DEFMANY(manyexpressions, expression)
