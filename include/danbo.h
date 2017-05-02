@@ -220,10 +220,39 @@ struct SymbolTree {
 				position = status.position; \
 				tree->symbols.add(status.tree); \
 			} \
-			result.position = position; \
 			if (result.tree->symbols.size() == 0) { \
 				delete (danbo::SymbolTree*) tree; \
 				return {position, NULL}; \
+			} \
+			result.position = position; \
+			return result; \
+		} \
+	};
+
+// match this symbol, or don't
+#define DEFOPTIONAL(me, nested) \
+	struct ST(me) : danbo::SymbolTree { \
+		Boolean exists; \
+		ST(nested)* tree; \
+		~ST(me)() { \
+			if (exists) { \
+				delete (danbo::SymbolTree*) tree; \
+			} \
+		} \
+	}; \
+	namespace SP(me) { \
+		danbo::Result<ST(me)> parse(String text, UInteger position) { \
+			ST(me)* tree = new ST(me); \
+			danbo::Result<ST(me)> result = {0, tree}; \
+			danbo::Result<ST(nested)> status = SP(nested)::parse(text, position); \
+			if (status.tree != NULL) { \
+				tree->exists = true; \
+				tree->tree = status.tree; \
+				result.position = status.position; \
+			} else { \
+				tree->exists = false; \
+				tree->tree = NULL; \
+				result.position = position; \
 			} \
 			return result; \
 		} \

@@ -9,3 +9,5 @@ DEFLITERAL(expression, N(nopenpar, openpar), N(nletter, letter), N(nclosepar, cl
 DEFVARIABLE(variableexpressions, expression)
 
 DEFMANY(manyexpressions, expression)
+
+DEFOPTIONAL(optionala, la)

@@ -102,6 +102,22 @@ static void danbo() {
 		assert(status.tree->symbols.get(1)->nletter->choice == ST(letter)::C_lb, "wrong choice");
 		delete status.tree;
 	}
+	
+	// optional
+	{
+		ParseResult<ST(optionala)> status = PARSE(optionala, "");
+		assert(status.status == ParseStatus::OK, "parser failed");
+		assert(status.tree->exists == false, "tree exists");
+		assert(status.tree->tree == NULL, "tree exists");
+		delete status.tree;
+	}
+	{
+		ParseResult<ST(optionala)> status = PARSE(optionala, "a");
+		assert(status.status == ParseStatus::OK, "parser failed");
+		assert(status.tree->exists == true, "tree exists");
+		assert(status.tree->tree != NULL, "tree exists");
+		delete status.tree;
+	}
 
 #ifdef MEMORY_LOG
 	// get allocated count
