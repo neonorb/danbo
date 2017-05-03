@@ -112,7 +112,10 @@ struct SymbolTree {
 	}
 #define _DEFLITERALP_EACH(data, x) _DEFLITERALP_EACH1 x
 
+// name the part of the literal
 #define N(name, nested) (name, nested)
+// don't give it a specific name (one will be generated)
+#define U(nested) (MACRO_CONCAT(z_unnamed, __COUNTER__), nested)
 #define DEFLITERAL(me, ...) \
 	struct ST(me) : danbo::SymbolTree { \
 		MAP(_DEFLITERALT_EACH, (), __VA_ARGS__) \

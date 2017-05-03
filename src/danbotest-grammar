@@ -4,7 +4,7 @@ DEFSWITCH(letter, la, lb)
 
 DEFCHAR(openpar, '(')
 DEFCHAR(closepar, ')')
-DEFLITERAL(expression, N(nopenpar, openpar), N(nletter, letter), N(nclosepar, closepar))
+DEFLITERAL(expression, U(openpar), N(nletter, letter), U(closepar))
 
 DEFVARIABLE(variableexpressions, expression)
 

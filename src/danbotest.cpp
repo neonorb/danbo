@@ -24,6 +24,7 @@ static void danbo() {
 	// get allocated count
 	uint64 origionalAllocatedCount = getAllocatedCount();
 #endif
+	
 	// parser must fail
 	{
 		ParseResult<ST(letter)> status = PARSE(letter, "ab");
