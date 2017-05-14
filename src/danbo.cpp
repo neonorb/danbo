@@ -9,7 +9,6 @@
 #include <feta.h>
 
 using namespace feta;
-using namespace danbo;
 
 namespace danbo {
 

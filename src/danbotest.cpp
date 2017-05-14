@@ -27,93 +27,93 @@ static void danbo() {
 	
 	// parser must fail
 	{
-		ParseResult<ST(letter)> status = PARSE(letter, "ab");
+		ParseResult<D_ST(letter)> status = D_PARSE(letter, "ab");
 		assert(status.status == ParseStatus::FAIL, "parser passed when it was suppose to fail");
 		assert(status.failedAt == 1, "incorrect failedAt");
 	}
 	
 	// choose the right character
 	{
-		ParseResult<ST(letter)> status = PARSE(letter, "a");
+		ParseResult<D_ST(letter)> status = D_PARSE(letter, "a");
 		assert(status.status == ParseStatus::OK, "parser failed");
-		assert(status.tree->choice == ST(letter)::C_la, "wrong choice");
+		assert(status.tree->choice == D_ST(letter)::C_la, "wrong choice");
 		delete status.tree;
 	}
 	{
-		ParseResult<ST(letter)> status = PARSE(letter, "b");
+		ParseResult<D_ST(letter)> status = D_PARSE(letter, "b");
 		assert(status.status == ParseStatus::OK, "parser failed");
-		assert(status.tree->choice == ST(letter)::C_lb, "wrong choice");
+		assert(status.tree->choice == D_ST(letter)::C_lb, "wrong choice");
 		delete status.tree;
 	}
 	
 	// match literal
 	{
-		ParseResult<ST(expression)> status = PARSE(expression, "(a)");
+		ParseResult<D_ST(expression)> status = D_PARSE(expression, "(a)");
 		assert(status.status == ParseStatus::OK, "parser failed");
-		assert(status.tree->nletter->choice == ST(letter)::C_la, "wrong choice");
+		assert(status.tree->nletter->choice == D_ST(letter)::C_la, "wrong choice");
 		delete status.tree;
 	}
 	{
-		ParseResult<ST(expression)> status = PARSE(expression, "(b)");
+		ParseResult<D_ST(expression)> status = D_PARSE(expression, "(b)");
 		assert(status.status == ParseStatus::OK, "parser failed");
-		assert(status.tree->nletter->choice == ST(letter)::C_lb, "wrong choice");
+		assert(status.tree->nletter->choice == D_ST(letter)::C_lb, "wrong choice");
 		delete status.tree;
 	}
 	
 	// variable
 	{
-		ParseResult<ST(variableexpressions)> status = PARSE(variableexpressions, "");
+		ParseResult<D_ST(variableexpressions)> status = D_PARSE(variableexpressions, "");
 		assert(status.status == ParseStatus::OK, "parser failed");
 		assert(status.tree->symbols.size() == 0, "wrong expression count");
 		delete status.tree;
 	}
 	{
-		ParseResult<ST(variableexpressions)> status = PARSE(variableexpressions, "(a)");
+		ParseResult<D_ST(variableexpressions)> status = D_PARSE(variableexpressions, "(a)");
 		assert(status.status == ParseStatus::OK, "parser failed");
 		assert(status.tree->symbols.size() == 1, "wrong expression count");
 		assert(status.tree->symbols.get(0)->nletter->choice == ST(letter)::C_la, "wrong choice");
 		delete status.tree;
 	}
 	{
-		ParseResult<ST(variableexpressions)> status = PARSE(variableexpressions, "(a)(b)");
+		ParseResult<D_ST(variableexpressions)> status = D_PARSE(variableexpressions, "(a)(b)");
 		assert(status.status == ParseStatus::OK, "parser failed");
 		assert(status.tree->symbols.size() == 2, "wrong expression count");
-		assert(status.tree->symbols.get(0)->nletter->choice == ST(letter)::C_la, "wrong choice");
-		assert(status.tree->symbols.get(1)->nletter->choice == ST(letter)::C_lb, "wrong choice");
+		assert(status.tree->symbols.get(0)->nletter->choice == D_ST(letter)::C_la, "wrong choice");
+		assert(status.tree->symbols.get(1)->nletter->choice == D_ST(letter)::C_lb, "wrong choice");
 		delete status.tree;
 	}
 	
 	// many
 	{
-		ParseResult<ST(manyexpressions)> status = PARSE(manyexpressions, "");
+		ParseResult<D_ST(manyexpressions)> status = D_PARSE(manyexpressions, "");
 		assert(status.status == ParseStatus::FAIL, "parser passed when it was suppose to fail");
 	}
 	{
-		ParseResult<ST(manyexpressions)> status = PARSE(manyexpressions, "(a)");
+		ParseResult<D_ST(manyexpressions)> status = D_PARSE(manyexpressions, "(a)");
 		assert(status.status == ParseStatus::OK, "parser failed");
 		assert(status.tree->symbols.size() == 1, "wrong expression count");
-		assert(status.tree->symbols.get(0)->nletter->choice == ST(letter)::C_la, "wrong choice");
+		assert(status.tree->symbols.get(0)->nletter->choice == D_ST(letter)::C_la, "wrong choice");
 		delete status.tree;
 	}
 	{
-		ParseResult<ST(manyexpressions)> status = PARSE(manyexpressions, "(a)(b)");
+		ParseResult<D_ST(manyexpressions)> status = D_PARSE(manyexpressions, "(a)(b)");
 		assert(status.status == ParseStatus::OK, "parser failed");
 		assert(status.tree->symbols.size() == 2, "wrong expression count");
-		assert(status.tree->symbols.get(0)->nletter->choice == ST(letter)::C_la, "wrong choice");
-		assert(status.tree->symbols.get(1)->nletter->choice == ST(letter)::C_lb, "wrong choice");
+		assert(status.tree->symbols.get(0)->nletter->choice == D_ST(letter)::C_la, "wrong choice");
+		assert(status.tree->symbols.get(1)->nletter->choice == D_ST(letter)::C_lb, "wrong choice");
 		delete status.tree;
 	}
 	
 	// optional
 	{
-		ParseResult<ST(optionala)> status = PARSE(optionala, "");
+		ParseResult<D_ST(optionala)> status = D_PARSE(optionala, "");
 		assert(status.status == ParseStatus::OK, "parser failed");
 		assert(status.tree->exists == false, "tree exists");
 		assert(status.tree->tree == NULL, "tree exists");
 		delete status.tree;
 	}
 	{
-		ParseResult<ST(optionala)> status = PARSE(optionala, "a");
+		ParseResult<D_ST(optionala)> status = D_PARSE(optionala, "a");
 		assert(status.status == ParseStatus::OK, "parser failed");
 		assert(status.tree->exists == true, "tree exists");
 		assert(status.tree->tree != NULL, "tree exists");

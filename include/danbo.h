@@ -55,12 +55,12 @@ ParseResult<T> parse(Result<T> (*parseFunction)(feta::String, feta::UInteger),
 }
 
 // parses the given string and returns a tree
-#define PARSE(name, string) \
-		danbo::parse(SP(name)::parse, string)
+#define D_PARSE(name, string) \
+		danbo::parse(D_SP(name)::parse, string)
 
 // references the symbol
-#define ST(me) _danbotree_##me // AST tree node
-#define SP(me) _danboparser_##me // grammar parser
+#define D_ST(me) _danbotree_##me // AST tree node
+#define D_SP(me) _danboparser_##me // grammar parser
 
 struct SymbolTree {
 	virtual ~SymbolTree() {
@@ -68,20 +68,20 @@ struct SymbolTree {
 };
 
 // forward declare symbols
-#define FDEF(me) \
-	struct ST(me); \
-	namespace SP(me) { \
-		danbo::Result<ST(me)> parse(String text, UInteger position); \
+#define D_FDEF(me) \
+	struct D_ST(me); \
+	namespace D_SP(me) { \
+		danbo::Result<D_ST(me)> parse(String text, UInteger position); \
 	}
 
 // match char
-#define DEFCHAR(me, c) \
-	struct ST(me) : danbo::SymbolTree { \
+#define D_DEFCHAR(me, c) \
+	struct D_ST(me) : danbo::SymbolTree { \
 	}; \
-	namespace SP(me) { \
-		danbo::Result<ST(me)> parse(String text, UInteger position) { \
+	namespace D_SP(me) { \
+		danbo::Result<D_ST(me)> parse(String text, UInteger position) { \
 			if (text[position] == c) { \
-				ST(me)* tree = new ST(me); \
+				D_ST(me)* tree = new D_ST(me); \
 				return {position + 1, tree}; \
 			} else { \
 				return {position, NULL}; \
@@ -91,7 +91,7 @@ struct SymbolTree {
 
 // match each symbol exactly
 // storage
-#define _DEFLITERALT_EACH1(name, nested) ST(nested)* name = NULL;
+#define _DEFLITERALT_EACH1(name, nested) D_ST(nested)* name = NULL;
 #define _DEFLITERALT_EACH(data, x) _DEFLITERALT_EACH1 x
 // destructor
 #define _DEFLITERALT_D_EACH1(name, nested) \
@@ -101,7 +101,7 @@ struct SymbolTree {
 #define _DEFLITERALT_D_EACH(data, x) _DEFLITERALT_D_EACH1 x
 // parser
 #define _DEFLITERALP_EACH1(name, nested) { \
-		danbo::Result<ST(nested)> status = SP(nested)::parse(text, position); \
+		danbo::Result<D_ST(nested)> status = D_SP(nested)::parse(text, position); \
 		if (status.tree != NULL) { \
 			position = status.position; \
 			result.tree->name = status.tree; \
@@ -113,20 +113,20 @@ struct SymbolTree {
 #define _DEFLITERALP_EACH(data, x) _DEFLITERALP_EACH1 x
 
 // name the part of the literal
-#define N(name, nested) (name, nested)
+#define D_N(name, nested) (name, nested)
 // don't give it a specific name (one will be generated)
-#define U(nested) (MACRO_CONCAT(z_unnamed, __COUNTER__), nested)
-#define DEFLITERAL(me, ...) \
-	struct ST(me) : danbo::SymbolTree { \
+#define D_U(nested) (MACRO_CONCAT(z_unnamed, __COUNTER__), nested)
+#define D_DEFLITERAL(me, ...) \
+	struct D_ST(me) : danbo::SymbolTree { \
 		MAP(_DEFLITERALT_EACH, (), __VA_ARGS__) \
-		~ST(me)() { \
+		~D_ST(me)() { \
 			MAP(_DEFLITERALT_D_EACH, (), __VA_ARGS__) \
 		} \
 	}; \
-	namespace SP(me) { \
-		danbo::Result<ST(me)> parse(String text, UInteger position) { \
-			ST(me)* tree = new ST(me); \
-			danbo::Result<ST(me)> result = {0, tree}; \
+	namespace D_SP(me) { \
+		danbo::Result<D_ST(me)> parse(String text, UInteger position) { \
+			D_ST(me)* tree = new D_ST(me); \
+			danbo::Result<D_ST(me)> result = {0, tree}; \
 			MAP(_DEFLITERALP_EACH, (), __VA_ARGS__) \
 			result.position = position; \
 			return result; \
@@ -135,7 +135,7 @@ struct SymbolTree {
 
 // match one of the symbols
 #define _DEFSWITCH_T_ENUM(data, nested) C_##nested,
-#define _DEFSWITCH_T_UNION(data, nested) ST(nested)* nested;
+#define _DEFSWITCH_T_UNION(data, nested) D_ST(nested)* nested;
 // destructor
 #define _DEFSWITCH_T_D_EACH(data, nested) \
 	case C_##nested: \
@@ -143,52 +143,52 @@ struct SymbolTree {
 		break;
 
 #define _DEFSWITCH_P(me, nested) { \
-		danbo::Result<ST(nested)> status = SP(nested)::parse(text, position); \
+		danbo::Result<D_ST(nested)> status = D_SP(nested)::parse(text, position); \
 		if (status.tree != NULL) { \
-			ST(me)* tree = new ST(me); \
-			tree->choice = ST(me)::C_##nested; \
+			D_ST(me)* tree = new D_ST(me); \
+			tree->choice = D_ST(me)::C_##nested; \
 			tree->nested = status.tree; \
 			return {status.position, tree}; \
 		} \
 	}
-#define DEFSWITCH(me, ...) \
-	struct ST(me) : danbo::SymbolTree { \
+#define D_DEFSWITCH(me, ...) \
+	struct D_ST(me) : danbo::SymbolTree { \
 		enum { \
 			MAP(_DEFSWITCH_T_ENUM, (), __VA_ARGS__) \
 		} choice; \
 		union { \
 			MAP(_DEFSWITCH_T_UNION, (), __VA_ARGS__) \
 		}; \
-		~ST(me)() { \
+		~D_ST(me)() { \
 			switch (choice) { \
 				MAP(_DEFSWITCH_T_D_EACH, (), __VA_ARGS__) \
 			} \
 		} \
 	}; \
-	namespace SP(me) { \
-		danbo::Result<ST(me)> parse(String text, UInteger position) { \
+	namespace D_SP(me) { \
+		danbo::Result<D_ST(me)> parse(String text, UInteger position) { \
 			MAP(_DEFSWITCH_P, me, __VA_ARGS__) \
 			return {position, NULL}; \
 		} \
 	};
 
 // match this symbol as many times as possible (including 0)
-#define DEFVARIABLE(me, nested) \
-	struct ST(me) : danbo::SymbolTree { \
-		List<ST(nested)*> symbols; \
-		~ST(me)() { \
-			Iterator<ST(nested)*> iterator = symbols.iterator(); \
+#define D_DEFVARIABLE(me, nested) \
+	struct D_ST(me) : danbo::SymbolTree { \
+		List<D_ST(nested)*> symbols; \
+		~D_ST(me)() { \
+			Iterator<D_ST(nested)*> iterator = symbols.iterator(); \
 			while (iterator.hasNext()) { \
 				delete (danbo::SymbolTree*) iterator.next(); \
 			} \
 		} \
 	}; \
-	namespace SP(me) { \
-		danbo::Result<ST(me)> parse(String text, UInteger position) { \
-			ST(me)* tree = new ST(me); \
-			danbo::Result<ST(me)> result = {0, tree}; \
+	namespace D_SP(me) { \
+		danbo::Result<D_ST(me)> parse(String text, UInteger position) { \
+			D_ST(me)* tree = new D_ST(me); \
+			danbo::Result<D_ST(me)> result = {0, tree}; \
 			while (true) { \
-				danbo::Result<ST(nested)> status = SP(nested)::parse(text, position); \
+				danbo::Result<D_ST(nested)> status = D_SP(nested)::parse(text, position); \
 				if (status.tree == NULL) { \
 					break; \
 				} \
@@ -201,22 +201,22 @@ struct SymbolTree {
 	};
 
 // match this symbol at least once
-#define DEFMANY(me, nested) \
-	struct ST(me) : danbo::SymbolTree { \
-		List<ST(nested)*> symbols; \
-		~ST(me)() { \
-			Iterator<ST(nested)*> iterator = symbols.iterator(); \
+#define D_DEFMANY(me, nested) \
+	struct D_ST(me) : danbo::SymbolTree { \
+		List<D_ST(nested)*> symbols; \
+		~D_ST(me)() { \
+			Iterator<D_ST(nested)*> iterator = symbols.iterator(); \
 			while (iterator.hasNext()) { \
 				delete (danbo::SymbolTree*) iterator.next(); \
 			} \
 		} \
 	}; \
-	namespace SP(me) { \
-		danbo::Result<ST(me)> parse(String text, UInteger position) { \
-			ST(me)* tree = new ST(me); \
-			danbo::Result<ST(me)> result = {0, tree}; \
+	namespace D_SP(me) { \
+		danbo::Result<D_ST(me)> parse(String text, UInteger position) { \
+			D_ST(me)* tree = new D_ST(me); \
+			danbo::Result<D_ST(me)> result = {0, tree}; \
 			while (true) { \
-				danbo::Result<ST(nested)> status = SP(nested)::parse(text, position); \
+				danbo::Result<D_ST(nested)> status = D_SP(nested)::parse(text, position); \
 				if (status.tree == NULL) { \
 					break; \
 				} \
@@ -233,21 +233,21 @@ struct SymbolTree {
 	};
 
 // match this symbol, or don't
-#define DEFOPTIONAL(me, nested) \
-	struct ST(me) : danbo::SymbolTree { \
+#define D_DEFOPTIONAL(me, nested) \
+	struct D_ST(me) : danbo::SymbolTree { \
 		Boolean exists; \
-		ST(nested)* tree; \
-		~ST(me)() { \
+		D_ST(nested)* tree; \
+		~D_ST(me)() { \
 			if (exists) { \
 				delete (danbo::SymbolTree*) tree; \
 			} \
 		} \
 	}; \
-	namespace SP(me) { \
-		danbo::Result<ST(me)> parse(String text, UInteger position) { \
-			ST(me)* tree = new ST(me); \
-			danbo::Result<ST(me)> result = {0, tree}; \
-			danbo::Result<ST(nested)> status = SP(nested)::parse(text, position); \
+	namespace D_SP(me) { \
+		danbo::Result<D_ST(me)> parse(String text, UInteger position) { \
+			D_ST(me)* tree = new D_ST(me); \
+			danbo::Result<D_ST(me)> result = {0, tree}; \
+			danbo::Result<D_ST(nested)> status = D_SP(nested)::parse(text, position); \
 			if (status.tree != NULL) { \
 				tree->exists = true; \
 				tree->tree = status.tree; \

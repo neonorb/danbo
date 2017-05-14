@@ -1,13 +1,13 @@
-DEFCHAR(la, 'a')
-DEFCHAR(lb, 'b')
-DEFSWITCH(letter, la, lb)
+D_DEFCHAR(la, 'a')
+D_DEFCHAR(lb, 'b')
+D_DEFSWITCH(letter, la, lb)
 
-DEFCHAR(openpar, '(')
-DEFCHAR(closepar, ')')
-DEFLITERAL(expression, U(openpar), N(nletter, letter), U(closepar))
+D_DEFCHAR(openpar, '(')
+D_DEFCHAR(closepar, ')')
+D_DEFLITERAL(expression, D_U(openpar), D_N(nletter, letter), D_U(closepar))
 
-DEFVARIABLE(variableexpressions, expression)
+D_DEFVARIABLE(variableexpressions, expression)
 
-DEFMANY(manyexpressions, expression)
+D_DEFMANY(manyexpressions, expression)
 
-DEFOPTIONAL(optionala, la)
+D_DEFOPTIONAL(optionala, la)
