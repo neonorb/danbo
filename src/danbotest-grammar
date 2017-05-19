@@ -1,13 +1,37 @@
+// ==== basic
+
 D_DEFCHAR(la, 'a')
 D_DEFCHAR(lb, 'b')
 D_DEFSWITCH(letter, la, lb)
 
 D_DEFCHAR(openpar, '(')
 D_DEFCHAR(closepar, ')')
-D_DEFLITERAL(expression, D_U(openpar), D_N(nletter, letter), D_U(closepar))
+D_DEFLITERAL(lit, D_U(openpar), D_N(nletter, letter), D_U(closepar))
 
-D_DEFVARIABLE(variableexpressions, expression)
+D_DEFVARIABLE(variablelits, lit)
 
-D_DEFMANY(manyexpressions, expression)
+D_DEFMANY(manylits, lit)
 
 D_DEFOPTIONAL(optionala, la)
+
+// ==== operator precedence
+
+D_DEFCHAR(plus, '+')
+D_DEFCHAR(times, '*')
+D_DEFCHAR(value, 'v')
+
+D_FDEF(expression)
+D_FDEF(subexpression)
+
+D_DEFSWITCH(multiplicationOptions, value, subexpression)
+D_DEFLITERAL(multiplicationLit, D_U(times), D_N(operand, multiplicationOptions))
+D_DEFMANY(multiplicationMany, multiplicationLit)
+D_DEFLITERAL(multiplication, D_N(first, multiplicationOptions), D_N(rest, multiplicationMany))
+
+D_DEFSWITCH(additionOptions, multiplication, value, subexpression)
+D_DEFLITERAL(additionLit, D_U(plus), D_N(operand, additionOptions))
+D_DEFMANY(additionMany, additionLit)
+D_DEFLITERAL(addition, D_N(first, additionOptions), D_N(rest, additionMany))
+
+D_DEFSWITCH(expression, addition, multiplication, subexpression, value)
+D_DEFLITERAL(subexpression, D_U(openpar), D_N(expression, expression), D_U(closepar))

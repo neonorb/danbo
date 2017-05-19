@@ -48,13 +48,13 @@ static void danbo() {
 	
 	// match literal
 	{
-		ParseResult<D_ST(expression)> status = D_PARSE(expression, "(a)");
+		ParseResult<D_ST(lit)> status = D_PARSE(lit, "(a)");
 		assert(status.status == ParseStatus::OK, "parser failed");
 		assert(status.tree->nletter->choice == D_ST(letter)::C_la, "wrong choice");
 		delete status.tree;
 	}
 	{
-		ParseResult<D_ST(expression)> status = D_PARSE(expression, "(b)");
+		ParseResult<D_ST(lit)> status = D_PARSE(lit, "(b)");
 		assert(status.status == ParseStatus::OK, "parser failed");
 		assert(status.tree->nletter->choice == D_ST(letter)::C_lb, "wrong choice");
 		delete status.tree;
@@ -62,22 +62,22 @@ static void danbo() {
 	
 	// variable
 	{
-		ParseResult<D_ST(variableexpressions)> status = D_PARSE(variableexpressions, "");
+		ParseResult<D_ST(variablelits)> status = D_PARSE(variablelits, "");
 		assert(status.status == ParseStatus::OK, "parser failed");
-		assert(status.tree->symbols.size() == 0, "wrong expression count");
+		assert(status.tree->symbols.size() == 0, "wrong lit count");
 		delete status.tree;
 	}
 	{
-		ParseResult<D_ST(variableexpressions)> status = D_PARSE(variableexpressions, "(a)");
+		ParseResult<D_ST(variablelits)> status = D_PARSE(variablelits, "(a)");
 		assert(status.status == ParseStatus::OK, "parser failed");
-		assert(status.tree->symbols.size() == 1, "wrong expression count");
-		assert(status.tree->symbols.get(0)->nletter->choice == ST(letter)::C_la, "wrong choice");
+		assert(status.tree->symbols.size() == 1, "wrong lit count");
+		assert(status.tree->symbols.get(0)->nletter->choice == D_ST(letter)::C_la, "wrong choice");
 		delete status.tree;
 	}
 	{
-		ParseResult<D_ST(variableexpressions)> status = D_PARSE(variableexpressions, "(a)(b)");
+		ParseResult<D_ST(variablelits)> status = D_PARSE(variablelits, "(a)(b)");
 		assert(status.status == ParseStatus::OK, "parser failed");
-		assert(status.tree->symbols.size() == 2, "wrong expression count");
+		assert(status.tree->symbols.size() == 2, "wrong lit count");
 		assert(status.tree->symbols.get(0)->nletter->choice == D_ST(letter)::C_la, "wrong choice");
 		assert(status.tree->symbols.get(1)->nletter->choice == D_ST(letter)::C_lb, "wrong choice");
 		delete status.tree;
@@ -85,20 +85,20 @@ static void danbo() {
 	
 	// many
 	{
-		ParseResult<D_ST(manyexpressions)> status = D_PARSE(manyexpressions, "");
+		ParseResult<D_ST(manylits)> status = D_PARSE(manylits, "");
 		assert(status.status == ParseStatus::FAIL, "parser passed when it was suppose to fail");
 	}
 	{
-		ParseResult<D_ST(manyexpressions)> status = D_PARSE(manyexpressions, "(a)");
+		ParseResult<D_ST(manylits)> status = D_PARSE(manylits, "(a)");
 		assert(status.status == ParseStatus::OK, "parser failed");
-		assert(status.tree->symbols.size() == 1, "wrong expression count");
+		assert(status.tree->symbols.size() == 1, "wrong lit count");
 		assert(status.tree->symbols.get(0)->nletter->choice == D_ST(letter)::C_la, "wrong choice");
 		delete status.tree;
 	}
 	{
-		ParseResult<D_ST(manyexpressions)> status = D_PARSE(manyexpressions, "(a)(b)");
+		ParseResult<D_ST(manylits)> status = D_PARSE(manylits, "(a)(b)");
 		assert(status.status == ParseStatus::OK, "parser failed");
-		assert(status.tree->symbols.size() == 2, "wrong expression count");
+		assert(status.tree->symbols.size() == 2, "wrong lit count");
 		assert(status.tree->symbols.get(0)->nletter->choice == D_ST(letter)::C_la, "wrong choice");
 		assert(status.tree->symbols.get(1)->nletter->choice == D_ST(letter)::C_lb, "wrong choice");
 		delete status.tree;
@@ -117,6 +117,74 @@ static void danbo() {
 		assert(status.status == ParseStatus::OK, "parser failed");
 		assert(status.tree->exists == true, "tree exists");
 		assert(status.tree->tree != NULL, "tree exists");
+		delete status.tree;
+	}
+	
+	// operator precedence
+	{
+		ParseResult<D_ST(expression)> status = D_PARSE(expression, "v");
+		assert(status.status == ParseStatus::OK, "parser failed");
+		assertnm(status.tree->choice == D_ST(expression)::C_value);
+		delete status.tree;
+	}
+	{
+		ParseResult<D_ST(expression)> status = D_PARSE(expression, "(v)");
+		assert(status.status == ParseStatus::OK, "parser failed");
+		assertnm(status.tree->choice == D_ST(expression)::C_subexpression);
+		assertnm(status.tree->subexpression->expression->choice == D_ST(expression)::C_value);
+		delete status.tree;
+	}
+	{
+		ParseResult<D_ST(expression)> status = D_PARSE(expression, "v+v");
+		assert(status.status == ParseStatus::OK, "parser failed");
+		assertnm(status.tree->choice == D_ST(expression)::C_addition);
+		assertnm(status.tree->addition->rest->symbols.size() == 1);
+		assertnm(status.tree->addition->rest->symbols.get(0)->operand->choice == D_ST(additionOptions)::C_value);
+		delete status.tree;
+	}
+	{
+		ParseResult<D_ST(expression)> status = D_PARSE(expression, "v*v");
+		assert(status.status == ParseStatus::OK, "parser failed");
+		assertnm(status.tree->choice == D_ST(expression)::C_multiplication);
+		assertnm(status.tree->multiplication->rest->symbols.size() == 1);
+		assertnm(status.tree->multiplication->rest->symbols.get(0)->operand->choice == D_ST(multiplicationOptions)::C_value);
+		delete status.tree;
+	}
+	{
+		ParseResult<D_ST(expression)> status = D_PARSE(expression, "v*v+v");
+		assert(status.status == ParseStatus::OK, "parser failed");
+		assertnm(status.tree->choice == D_ST(expression)::C_addition);
+		assertnm(status.tree->addition->first->choice == D_ST(additionOptions)::C_multiplication);
+		assertnm(status.tree->addition->first->multiplication->first->choice == D_ST(multiplicationOptions)::C_value); // first value
+		assertnm(status.tree->addition->first->multiplication->rest->symbols.size() == 1);
+		assertnm(status.tree->addition->first->multiplication->rest->symbols.get(0)->operand->choice == D_ST(multiplicationOptions)::C_value); // second value
+		assertnm(status.tree->addition->rest->symbols.size() == 1);
+		assertnm(status.tree->addition->rest->symbols.get(0)->operand->choice == D_ST(additionOptions)::C_value); // third value
+		delete status.tree;
+	}
+	{
+		ParseResult<D_ST(expression)> status = D_PARSE(expression, "v+v*v");
+		assert(status.status == ParseStatus::OK, "parser failed");
+		assertnm(status.tree->choice == D_ST(expression)::C_addition);
+		assertnm(status.tree->addition->first->choice == D_ST(additionOptions)::C_value); // first value
+		assertnm(status.tree->addition->rest->symbols.size() == 1);
+		assertnm(status.tree->addition->rest->symbols.get(0)->operand->choice == D_ST(additionOptions)::C_multiplication);
+		assertnm(status.tree->addition->rest->symbols.get(0)->operand->multiplication->first->choice == D_ST(multiplicationOptions)::C_value); // second value
+		assertnm(status.tree->addition->rest->symbols.get(0)->operand->multiplication->rest->symbols.size() == 1);
+		assertnm(status.tree->addition->rest->symbols.get(0)->operand->multiplication->rest->symbols.get(0)->operand->choice == D_ST(multiplicationOptions)::C_value); // third value
+		delete status.tree;
+	}
+	{
+		ParseResult<D_ST(expression)> status = D_PARSE(expression, "(v+v)*v");
+		assert(status.status == ParseStatus::OK, "parser failed");
+		assertnm(status.tree->choice == D_ST(expression)::C_multiplication);
+		assertnm(status.tree->multiplication->first->choice == D_ST(multiplicationOptions)::C_subexpression);
+		assertnm(status.tree->multiplication->first->subexpression->expression->choice == D_ST(expression)::C_addition);
+		assertnm(status.tree->multiplication->first->subexpression->expression->addition->first->choice == D_ST(additionOptions)::C_value); // first value
+		assertnm(status.tree->multiplication->first->subexpression->expression->addition->rest->symbols.size() == 1);
+		assertnm(status.tree->multiplication->first->subexpression->expression->addition->rest->symbols.get(0)->operand->choice == D_ST(additionOptions)::C_value); // second value
+		assertnm(status.tree->multiplication->rest->symbols.size() == 1);
+		assertnm(status.tree->multiplication->rest->symbols.get(0)->operand->choice == D_ST(multiplicationOptions)::C_value); // third value
 		delete status.tree;
 	}
 
